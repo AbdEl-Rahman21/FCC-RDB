@@ -3,7 +3,7 @@
 PSQL="psql --username=freecodecamp --dbname=number_guess -t --no-align -c"
 
 SECRET_NUMBER=$(( $RANDOM % 1000 + 1 ))
-NUMBER_OF_TURNS=$(( 1 ))
+NUMBER_OF_TURNS=$(( 0 ))
 NUMBER=$(( 0 ))
 
 echo "Enter your username:"
@@ -34,6 +34,8 @@ do
 
     while [[ ! $NUMBER =~ ^[0-9]+$ ]]
     do
+        (( NUMBER_OF_TURNS += 1 ))
+
         echo "That is not an integer, guess again:"
         read NUMBER
     done
@@ -41,14 +43,15 @@ do
     if (( $NUMBER > $SECRET_NUMBER ))
     then
         echo "It's lower than that, guess again:"
-    else
+    elif (( $NUMBER < $SECRET_NUMBER ))
+    then
         echo "It's higher than that, guess again:"
     fi
 done
-
-echo "You guessed it in $NUMBER_OF_TURNS tries. The secret number was $SECRET_NUMBER. Nice job!"
 
 if [[ -z $BEST_GAME || $NUMBER_OF_TURNS < $BEST_GAME ]]
 then
     TEMP=$($PSQL "update users set best_game = $NUMBER_OF_TURNS, games_played = $GAMES_PLAYED where username = '$USERNAME'")
 fi
+
+echo "You guessed it in $NUMBER_OF_TURNS tries. The secret number was $SECRET_NUMBER. Nice job!"
